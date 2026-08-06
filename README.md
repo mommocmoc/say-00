@@ -72,7 +72,8 @@ say-00/
 ├── .env                           # Local Gemini API Key configuration
 ├── backend/
 │   ├── main.py                    # FastAPI REST API & Static File Server
-│   ├── workflow.py                # ADK 2.0 Workflow Graph & Edge definitions
+│   ├── agent.py                   # ADK 2.0 Standard Agent Entrypoint (root_agent)
+│   ├── workflow.py                # Backward compatibility alias module
 │   └── services/
 │       ├── safety_service.py       # ADK Guardrail Node (Keyword & LLM Moderation)
 │       └── nanobanana_service.py   # Gemini Image Generation Engine (gemini-3.1-flash-lite-image)
@@ -120,4 +121,4 @@ uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload
 - **Author**: JaeHwan So
 - **Project Type**: Personal Portfolio Project (개발자 개인 포트폴리오 프로젝트)
 - **License**: [MIT License](LICENSE) (상업적 이용, 수정, 재배포 자유 및 출처 표기)
-- **Code Style**: Google Python Style Guide (PEP 8 검증 완료)
+- **Code Style**: Google Python Style Guide (flake8 100% Pass)
