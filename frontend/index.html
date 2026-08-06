@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Say "00" Cam - Voice Subject Transformer</title>
+  <meta name="description" content="Say '00' Cam - 음성으로 말하면 사진 속 메인 피사체가 해당 유형으로 변신하는 ADK 2.0 기반 AI 카메라">
+  
+  <!-- Google Fonts: SF Pro / Outfit / Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="ios-camera-app">
+
+  <!-- Main Camera Viewport -->
+  <div class="camera-viewport">
+    
+    <!-- Clean Top HUD Bar (iOS Camera Style with Center ? Button) -->
+    <header class="camera-top-hud">
+      <div class="hud-left-group">
+        <button class="hud-icon-btn" id="btnToggleFlash" title="플래시 효과">
+          <i class="fa-solid fa-bolt"></i>
+        </button>
+      </div>
+
+      <div class="hud-center-group">
+        <button class="hud-icon-btn hud-center-about" id="btnAboutProject" title="About This Project (프로젝트 소개)">
+          <i class="fa-solid fa-circle-question"></i>
+        </button>
+      </div>
+
+      <div class="hud-right-group">
+        <button class="hud-icon-btn" id="btnToggleGrid" title="격자 모드">
+          <i class="fa-solid fa-border-all"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Camera Video Feed & Overlays -->
+    <div class="video-container" id="videoContainer">
+      <video id="webcam" autoplay playsinline muted></video>
+      <canvas id="snapshotCanvas" style="display:none;"></canvas>
+      
+      <!-- Shutter Flash Animation -->
+      <div class="shutter-flash" id="shutterFlash"></div>
+
+      <!-- Camera Grid Lines Overlay -->
+      <div class="camera-grid-overlay" id="cameraGrid">
+        <div class="grid-line line-v1"></div>
+        <div class="grid-line line-v2"></div>
+        <div class="grid-line line-h1"></div>
+        <div class="grid-line line-h2"></div>
+      </div>
+
+      <!-- Permission / Start Camera Overlay -->
+      <div class="camera-start-overlay" id="cameraOverlay">
+        <div class="overlay-icon">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+        </div>
+        <h2>Say <span>"00"</span> Cam</h2>
+        <p>"Say 치즈", "Say 스톤", "Say 캔디"라고 말해보세요!<br>사진 속 피사체가 지정한 모습으로 변신합니다.</p>
+        <button class="btn-ios-primary" id="btnStartCamera">
+          <i class="fa-solid fa-power-off"></i> 카메라 & 음성 시작
+        </button>
+      </div>
+
+      <!-- Top Safety / Toast Notification -->
+      <div class="camera-toast-notification" id="cameraToast">
+        <i class="fa-solid fa-shield-halved" id="toastIcon"></i>
+        <span id="toastMessage">안내 메시지</span>
+      </div>
+
+      <!-- Detected Trigger Banner Overlay -->
+      <div class="trigger-detect-banner" id="triggerBanner">
+        <i class="fa-solid fa-microphone-lines"></i>
+        <span id="detectedPhraseText">Say "Cheese" 감지 완료!</span>
+      </div>
+    </div>
+
+    <!-- Bottom Controls Bar (iOS Camera Style) -->
+    <footer class="camera-bottom-controls">
+      
+      <!-- Floating Siri Voice Text Bubble -->
+      <div class="siri-voice-bubble" id="siriBubble">
+        <div class="siri-wave-dots" id="siriDots">
+          <span></span><span></span><span></span>
+        </div>
+        <span id="voiceStatusText">Say "치즈", Say "스톤"이라고 말해보세요!</span>
+      </div>
+
+      <!-- Bottom Actions Row -->
+      <div class="bottom-actions-row">
+        
+        <!-- Left: Gallery History Thumbnail -->
+        <button class="action-btn gallery-btn" id="btnOpenGallery" title="변환 히스토리 갤러리">
+          <div class="gallery-thumb-wrapper" id="galleryThumbWrapper">
+            <i class="fa-solid fa-images" id="galleryPlaceholderIcon"></i>
+            <img id="galleryThumbImg" src="" alt="Latest History" style="display:none;">
+          </div>
+        </button>
+
+        <!-- Center: iOS Double-Ring Shutter Button -->
+        <button class="shutter-button-outer" id="btnShutter" title="촬영 & 음성 수신">
+          <div class="shutter-button-inner" id="shutterInner"></div>
+        </button>
+
+        <!-- Right: Camera Flip (Front/Rear) -->
+        <button class="action-btn flip-btn" id="btnFlipCamera" title="전면/후면 카메라 전환">
+          <i class="fa-solid fa-arrows-rotate"></i>
+        </button>
+
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- iOS Slide-Up Sheet: About This Project -->
+  <div class="ios-sheet-overlay" id="aboutSheet">
+    <div class="ios-sheet-card about-sheet-card">
+      <div class="sheet-grab-handle"></div>
+
+      <div class="sheet-header">
+        <div class="about-title-box">
+          <div class="about-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+          <div>
+            <h3>Say "00" Cam</h3>
+            <span class="sheet-sub">Google ADK 2.0 Graph Powered AI Camera</span>
+          </div>
+        </div>
+        <button class="sheet-close-btn" id="btnCloseAboutSheet"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="about-content">
+        <div class="about-section">
+          <h4><i class="fa-solid fa-lightbulb"></i> 프로젝트 소개 (Concept)</h4>
+          <p>
+            <strong>Say "00" Cam</strong>은 사용자가 마이크로 <strong>"Say [피사체 유형]"</strong> (예: <i>Say "Cheese"</i>, <i>Say "Stone"</i>, <i>Say "Candy"</i>)을 외치면, 사진이 찍히고 원본 사진의 메인 피사체를 사용자가 말한 피사체 형태/재질로 자동 변환해 주는 시리 스타일 음성 AI 카메라입니다.
+          </p>
+        </div>
+
+        <div class="about-section">
+          <h4><i class="fa-solid fa-diagram-project"></i> 핵심 아키텍처 및 특징</h4>
+          <ul class="about-tech-list">
+            <li>
+              <i class="fa-solid fa-microphone-lines"></i>
+              <div>
+                <strong>Siri 스타일 실시간 음성 수신</strong>
+                <p>Web Speech API 기반으로 "Say [키워드]" 발화를 실시간 감지하여 자동 촬영을 진행합니다.</p>
+              </div>
+            </li>
+            <li>
+              <i class="fa-solid fa-shield-cat"></i>
+              <div>
+                <strong>ADK 2.0 Safety Guardrail 노드</strong>
+                <p>부적절하거나 유해한 피사체 유형(선정성, 폭력, 사망, 마약 등)을 사전에 필터링 및 차단합니다.</p>
+              </div>
+            </li>
+            <li>
+              <i class="fa-solid fa-brain"></i>
+              <div>
+                <strong>Gemini AI (gemini-3.1-flash-lite-image) 엔진</strong>
+                <p>Google GenAI 멀티모달 모델로 원본 사진 속 메인 피사체의 특징을 지정된 재질로 정교하게 합성합니다.</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <div class="about-section">
+          <h4><i class="fa-solid fa-code"></i> 기술 스택 & 코드 스타일</h4>
+          <div class="tech-tags">
+            <span class="tech-tag">Google ADK 2.0</span>
+            <span class="tech-tag">Gemini GenAI</span>
+            <span class="tech-tag">FastAPI</span>
+            <span class="tech-tag">Python (Google Style)</span>
+            <span class="tech-tag">iOS Mobile UI</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- iOS Slide-Up Sheet: Result Viewer (Before & After) -->
+  <div class="ios-sheet-overlay" id="resultSheet">
+    <div class="ios-sheet-card">
+      <div class="sheet-grab-handle"></div>
+
+      <div class="sheet-header">
+        <div class="sheet-title-group">
+          <h3 id="sheetKeywordTitle">Say "Cheese"</h3>
+          <span class="sheet-sub" id="sheetResultReason">Gemini AI 변환 완료</span>
+        </div>
+        <button class="sheet-close-btn" id="btnCloseResultSheet"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <!-- Result Comparison Viewport -->
+      <div class="result-view-container">
+        <div class="view-mode-tabs">
+          <button class="tab-btn active" id="tabShowTransformed">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> 변환된 피사체
+          </button>
+          <button class="tab-btn" id="tabShowOriginal">
+            <i class="fa-solid fa-image"></i> 원본 사진
+          </button>
+        </div>
+
+        <div class="result-image-wrapper">
+          <img id="resultImgDisplay" src="" alt="Result Photo">
+          <span class="result-type-badge" id="resultTypeBadge">Transformed (AI)</span>
+        </div>
+      </div>
+
+      <!-- Sheet Footer Actions -->
+      <div class="sheet-footer">
+        <a id="btnDownloadResult" class="btn-ios-action btn-ios-download" download="say-transformed.jpg">
+          <i class="fa-solid fa-download"></i> 이미지 저장
+        </a>
+        <button class="btn-ios-action btn-ios-secondary" id="btnRetakeFromSheet">
+          <i class="fa-solid fa-camera"></i> 다시 촬영
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- iOS Slide-Up Sheet: History Gallery Sheet -->
+  <div class="ios-sheet-overlay" id="gallerySheet">
+    <div class="ios-sheet-card gallery-sheet-card">
+      <div class="sheet-grab-handle"></div>
+
+      <div class="sheet-header">
+        <h3><i class="fa-solid fa-clock-rotate-left"></i> 변환 히스토리</h3>
+        <div class="header-right-actions">
+          <button class="text-btn-danger" id="btnClearHistory">전체 삭제</button>
+          <button class="sheet-close-btn" id="btnCloseGallerySheet"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      </div>
+
+      <div class="gallery-grid" id="historyGrid">
+        <div class="empty-gallery" id="emptyGallery">
+          <i class="fa-solid fa-photo-film"></i>
+          <p>아직 변환된 히스토리가 없습니다.<br>"Say 치즈"라고 외쳐서 첫 번째 사진을 만들어보세요!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
