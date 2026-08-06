@@ -1,13 +1,57 @@
-# Project Overview
-Say "[피사체 유형]"을 얘기하면, 피사체 유형에 맞게 유저가 찍은 사진의 메인 피사체를 해당 피사체 유형으로 변형합니다.
-예를 들어 Say "Cheese"라고 이야기하면, 사진이 찍히고 유저가 찍은 사진의 메인 피사체를 치즈 형태로 변형합니다.
+# Agent Specification & Development Guide (AGENT.md)
 
-유저의 세이 "치즈" ,"스톤", "캔디" 등등 피사체를 유저가 얘기한 키워드로 구성되게 변경합니다. 음성 인식 + ADK 2.0 그래프 노드를 기반으로 유저가 유해한 단어를 얘기했는지 분석하고 유해하지 않다면 이미지를 나노바나나 기반으로 변경해 제공합니다.
+## 📌 Project Overview
+**Say "00" Cam** is an iOS-style voice-activated AI camera application powered by Google ADK 2.0 Graph Workflow and Gemini Multimodal AI.
+When the user speaks a command like **"Say [Subject Type]"** (e.g., *Say "Cheese"*, *Say "Stone"*, *Say "Candy"*), the app snaps a photo and transforms the main subject into the requested material or form using Google ADK 2.0 Graph Workflow and Gemini AI (`gemini-3.1-flash-lite-image`).
 
-# Tech Overview
-- ADK 2.0의 그래프 노드를 기반으로 구현합니다.
-- [피사체 유형]을 혐오스럽거나, 부적절한 유형으로 말할경우 이미지 전달 및 변환 과정을 사전 차단하고 유저에게 안내합니다.
-- 필요시  agents-cli를 활용합니다.
+---
 
-# Code Style
-- Google Python Style로 작성합니다.
+## 📐 System Architecture & Module Map
+
+### 1. Backend Architecture (`backend/`)
+- `backend/agent.py`: Standard ADK 2.0 Graph Workflow entrypoint defining `root_agent = Workflow(...)`.
+  - **Node 1**: `safety_guardrail_func` (Safety & moderation filtering)
+  - **Node 2**: `nanobanana_transform_func` (`gemini-3.1-flash-lite-image` subject generation)
+  - **Node 3**: `format_output_func` (Response payload formatter)
+  - Uses modern ADK 2.0 dictionary routed tuple edges:
+    ```python
+    edges = [
+        ('START', safety_guardrail_func),
+        (safety_guardrail_func, {
+            'safe': nanobanana_transform_func,
+            'blocked': format_output_func
+        }),
+        (nanobanana_transform_func, format_output_func)
+    ]
+    ```
+- `backend/main.py`: FastAPI web server serving REST API endpoints (`POST /api/transform`, `POST /api/safety-check`, `GET /api/health`) and mounting static web files.
+- `backend/services/safety_service.py`: 2-stage hybrid safety moderation (`INAPPROPRIATE_KEYWORDS` + `gemini-2.5-flash` context check).
+- `backend/services/nanobanana_service.py`: `gemini-3.1-flash-lite-image` model integration with PIL visual fallback engine.
+
+### 2. Frontend Architecture (`frontend/`)
+- `frontend/index.html`: Native iOS Camera UI layout with top HUD (`⚡` Flash, `(?)` About, `🌐` Grid), video feed, double-ring shutter button, floating Siri voice bubble, and slide-up sheet cards.
+- `frontend/style.css`: Glassmorphism iOS design system, spring animations, and slide-up sheet modals.
+- `frontend/app.js`: Web Speech API continuous recognition, webcam video stream, shutter flash animation, API integration, and quota-safe gallery history.
+
+---
+
+## ⚙️ Critical Development Rules for Coding Agents
+
+1. **ADK 2.0 Standard Entrypoint**:
+   - `root_agent` in `backend/agent.py` MUST remain the root Workflow instance.
+   - Do NOT import or instantiate legacy `Edge(...)` or `FunctionNode(...)` wrappers unnecessarily; use clean tuple & dictionary edge definitions.
+
+2. **Gemini AI Models**:
+   - Always use `gemini-3.1-flash-lite-image` via `google-genai` `generate_content` for image subject transformation.
+   - Always load environment variables dynamically using `load_dotenv(override=True)` to ensure fresh API key reads.
+
+3. **Speech Recognition Debounce & Double-Trigger Prevention**:
+   - In `frontend/app.js`, ONLY process voice triggers when `event.results[i].isFinal` is `true`.
+   - Maintain a 2.5s debounce cooldown after capture to prevent partial phrases (e.g. "솜", "솜사", "솜사탕") from triggering multiple back-to-back shots.
+
+4. **LocalStorage Quota Safety**:
+   - When saving history items to LocalStorage, compress transformed images to 280px thumbnails to prevent `QuotaExceededError`.
+
+5. **Code Style & Linting Verification**:
+   - All Python code MUST strictly adhere to the Google Python Style Guide.
+   - Run `flake8 backend/` after making backend changes to verify zero errors before declaring task completion.
