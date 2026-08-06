@@ -73,7 +73,6 @@ say-00/
 ├── backend/
 │   ├── main.py                    # FastAPI REST API & Static File Server
 │   ├── agent.py                   # ADK 2.0 Standard Agent Entrypoint (root_agent)
-│   ├── workflow.py                # Backward compatibility alias module
 │   └── services/
 │       ├── safety_service.py       # ADK Guardrail Node (Keyword & LLM Moderation)
 │       └── nanobanana_service.py   # Gemini Image Generation Engine (gemini-3.1-flash-lite-image)
