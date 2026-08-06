@@ -1,19 +1,20 @@
 # Say "00" Cam (Voice Subject Transformer)
 
+[![Portfolio Project](https://img.shields.io/badge/Project-Personal_Portfolio-0a84ff?style=for-the-badge&logo=appveyor)](https://github.com)
 [![Google ADK 2.0](https://img.shields.io/badge/Google_ADK-2.0_Graph-6366f1?style=for-the-badge&logo=google)](https://adk.dev)
 [![Gemini AI](https://img.shields.io/badge/Gemini_AI-gemini--3.1--flash--lite--image-a855f7?style=for-the-badge&logo=google-gemini)](https://ai.google.dev)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.141-10b981?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
-[![Python Style](https://img.shields.io/badge/Code_Style-Google_Python-blue?style=for-the-badge&logo=python)](https://google.github.io/styleguide/pyguide.html)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 
 ---
 
 ## 📌 Overview (개요)
 
 [한글]
-**Say "00" Cam**은 사용자가 마이크로 **"Say [피사체 유형]"** (예: *Say "Cheese"*, *Say "Stone"*, *Say "Candy"*)을 외치면, 자동으로 사진이 찍히고 원본 사진 속 메인 피사체를 사용자가 말한 피사체 형태 및 재질로 자동 변환해 주는 아이폰 카메라 스타일의 음성 AI 서비스입니다.
+**Say "00" Cam**은 사용자가 마이크로 **"Say [피사체 유형]"** (예: *Say "Cheese"*, *Say "Stone"*, *Say "Candy"*)을 외치면, 자동으로 사진이 찍히고 원본 사진 속 메인 피사체를 사용자가 말한 피사체 형태 및 재질로 자동 변환해 주는 아이폰 카메라 스타일의 음성 AI 포트폴리오 프로젝트입니다.
 
 [English]
-**Say "00" Cam** is an iOS-style voice-activated AI camera application. When a user speaks a command like **"Say [Subject Type]"** (e.g., *Say "Cheese"*, *Say "Stone"*, *Say "Candy"*), the camera automatically captures a photo and transforms the main subject into the requested material or form using Google ADK 2.0 Graph Workflow and Gemini Multimodal AI.
+**Say "00" Cam** is an iOS-style voice-activated AI camera application developed as a personal portfolio project. When a user speaks a command like **"Say [Subject Type]"** (e.g., *Say "Cheese"*, *Say "Stone"*, *Say "Candy"*), the camera automatically captures a photo and transforms the main subject into the requested material or form using Google ADK 2.0 Graph Workflow and Gemini Multimodal AI.
 
 ---
 
@@ -65,6 +66,7 @@ flowchart TD
 say-00/
 ├── AGENT.md                       # Project agent specification & style guide
 ├── README.md                      # Multilingual documentation (국문/영문)
+├── LICENSE                        # MIT License file
 ├── requirements.txt               # Python dependencies specification
 ├── .env.example                   # Environment variable template
 ├── .env                           # Local Gemini API Key configuration
@@ -113,8 +115,9 @@ uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload
 
 ---
 
-## 🔒 Copyright & Rights (저작권)
+## 👤 Project Info & License (프로젝트 정보 및 라이선스)
 
-- **Copyright**: Copyright (c) 2026. All Rights Reserved. (Proprietary / 무단 전재 및 재배포 금지)
-- **Code Style**: Google Python Style Guide (`yapf` / `flake8` compliant)
-- **Knowledge Repository Sync**: Automatically synced to `~/brain/say-00/` for GBrain persistence.
+- **Author**: JaeHwan So
+- **Project Type**: Personal Portfolio Project (개발자 개인 포트폴리오 프로젝트)
+- **License**: [MIT License](LICENSE) (상업적 이용, 수정, 재배포 자유 및 출처 표기)
+- **Code Style**: Google Python Style Guide (PEP 8 검증 완료)
