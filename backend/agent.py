@@ -25,6 +25,7 @@ load_dotenv()
 class TransformRequest(BaseModel):
     image_b64: str
     target_keyword: str
+    client_id: Optional[str] = 'default_user'
 
 
 class TransformResponse(BaseModel):
@@ -34,6 +35,7 @@ class TransformResponse(BaseModel):
     target_keyword: str
     original_image: str
     transformed_image: Optional[str] = None
+    remaining_shots: Optional[int] = None
 
 
 def safety_guardrail_func(node_input: TransformRequest) -> Event:

@@ -30,6 +30,9 @@
       </div>
 
       <div class="hud-center-group">
+        <div class="quota-badge" id="quotaBadge" title="남은 무료 촬영 횟수">
+          <i class="fa-solid fa-bolt-lightning"></i> <span id="quotaCount">10</span>/10회
+        </div>
         <button class="hud-icon-btn hud-center-about" id="btnAboutProject" title="About This Project (프로젝트 소개)">
           <i class="fa-solid fa-circle-question"></i>
         </button>
@@ -217,12 +220,93 @@
 
       <!-- Sheet Footer Actions -->
       <div class="sheet-footer">
-        <a id="btnDownloadResult" class="btn-ios-action btn-ios-download" download="say-transformed.jpg">
-          <i class="fa-solid fa-download"></i> 이미지 저장
-        </a>
+        <button id="btnDownloadResult" class="btn-ios-action btn-ios-download">
+          <i class="fa-solid fa-download"></i> 사진 저장
+        </button>
+        <button id="btnShareResult" class="btn-ios-action btn-ios-share">
+          <i class="fa-solid fa-share-nodes"></i> 공유 / 앨범 저장
+        </button>
         <button class="btn-ios-action btn-ios-secondary" id="btnRetakeFromSheet">
           <i class="fa-solid fa-camera"></i> 다시 촬영
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- iOS Slide-Up Sheet: Google Login Upgrade Sheet (3-shot to 10-shot) -->
+  <div class="ios-sheet-overlay" id="googleAuthSheet">
+    <div class="ios-sheet-card auth-sheet-card">
+      <div class="sheet-grab-handle"></div>
+
+      <div class="sheet-header">
+        <div class="paywall-title-box">
+          <div class="paywall-icon google-icon-bg"><i class="fa-brands fa-google"></i></div>
+          <div>
+            <h3>3회 맛보기 무료 촬영 완료</h3>
+            <span class="sheet-sub">Google 1초 로그인 시 7회 추가 촬영권 즉시 제공</span>
+          </div>
+        </div>
+        <button class="sheet-close-btn" id="btnCloseGoogleAuthSheet"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="paywall-body">
+        <p class="paywall-desc">
+          비회원 기본 제공 <strong>3회 맛보기 촬영</strong>이 소진되었습니다.<br>
+          Google 계정으로 1초 로그인하시면 <strong>7회 추가 촬영권 (총 10회)</strong>을 즉시 드립니다!
+        </p>
+
+        <div class="auth-action-box">
+          <button class="btn-google-login" id="btnGoogleLogin">
+            <i class="fa-brands fa-google"></i> Google 계정으로 1초 로그인 (7회 받기)
+          </button>
+          <span class="auth-or-text">또는</span>
+          <button class="btn-text-secondary" id="btnOpenPaywallFromAuth">
+            Lemon Squeezy 충전 패키지 보기
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- iOS Slide-Up Sheet: Paywall Recharge Sheet -->
+  <div class="ios-sheet-overlay" id="paywallSheet">
+    <div class="ios-sheet-card paywall-sheet-card">
+      <div class="sheet-grab-handle"></div>
+
+      <div class="sheet-header">
+        <div class="paywall-title-box">
+          <div class="paywall-icon"><i class="fa-solid fa-bolt-lightning"></i></div>
+          <div>
+            <h3>무료 10회 촬영 소진</h3>
+            <span class="sheet-sub">Lemon Squeezy 결제로 추가 촬영권 충전</span>
+          </div>
+        </div>
+        <button class="sheet-close-btn" id="btnClosePaywallSheet"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="paywall-body">
+        <p class="paywall-desc">
+          기본 제공된 <strong>무료 10회 촬영</strong>을 모두 사용하셨습니다.<br>
+          추가 촬영권을 구매하여 음성 변환 서비스를 계속 이용해 보세요!
+        </p>
+
+        <div class="pricing-cards">
+          <div class="price-card popular">
+            <div class="badge-popular">인기</div>
+            <h4>5회 촬영 패키지</h4>
+            <div class="price-val">$0.79 <span>(약 1,000원)</span></div>
+            <button class="btn-pay-lemon" id="btnBuy5Shots">
+              <i class="fa-solid fa-credit-card"></i> 5회 충전하기 (Lemon Squeezy)
+            </button>
+          </div>
+          <div class="price-card">
+            <h4>20회 촬영 패키지</h4>
+            <div class="price-val">$2.29 <span>(약 3,000원)</span></div>
+            <button class="btn-pay-lemon secondary" id="btnBuy20Shots">
+              <i class="fa-solid fa-credit-card"></i> 20회 충전하기
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
