@@ -174,9 +174,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         console.log('Final speech result:', transcript);
-        const match = transcript.match(/(?:say|세이|새이)\s+([가-힣a-zA-Z0-9]+)/i);
+        // Supports both spaced ("세이 치즈") and attached ("세이치즈", "saycheese", "새이캔디") continuous speech
+        const match = transcript.match(/(?:say|세이|새이)\s*([가-힣a-zA-Z0-9]+)/i);
         if (match && match[1]) {
           const detectedKeyword = match[1].trim();
+
+          // Ignore if the extracted keyword is empty or identical to trigger words
+          if (!detectedKeyword || ['say', '세이', '새이'].includes(detectedKeyword.toLowerCase())) {
+            continue;
+          }
 
           const now = Date.now();
           if (now - lastTriggerTime < 2500) {

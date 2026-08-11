@@ -61,3 +61,12 @@ When the user speaks a command like **"Say [Subject Type]"** (e.g., *Say "Cheese
 5. **Code Style & Linting Verification**:
    - All Python code MUST strictly adhere to the Google Python Style Guide.
    - Run `flake8 backend/` after making backend changes to verify zero errors before declaring task completion.
+
+---
+
+## 📋 Development Backlog & Roadmap
+
+### ✅ Completed Features
+- [x] **iOS Camera UI & Siri Voice Recognition**: Edge-to-edge camera feed with Web Speech API (`isFinal` speech detection & attached speech slot extraction e.g. "세이치즈", "saycheese").
+- [x] **ADK 2.0 Graph & Gemini Multimodal Engine**: Safety guardrail node & `gemini-3.1-flash-lite-image` subject transformer.
+- [ ] **Firebase Auth Production SDK**: Wire Firebase Web SDK v10 `GoogleAuthProvider` popup for live Google Sign-In.
