@@ -1,0 +1,27 @@
+# GCP Cloud Build Configuration for Say "00" Cam
+# Automatically builds Docker image and deploys to Cloud Run with Secret Manager bindings
+
+steps:
+  # 1. Build Container Image via Dockerfile
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/say-00:$COMMIT_SHA', '.']
+
+  # 2. Push Container Image to Google Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/say-00:$COMMIT_SHA']
+
+  # 3. Deploy to Cloud Run with Automatic GCP Secret Manager bindings
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'say-00'
+      - '--image=gcr.io/$PROJECT_ID/say-00:$COMMIT_SHA'
+      - '--region=asia-northeast1'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--set-secrets=GEMINI_API_KEY=GEMINI_API_KEY:latest,ADMIN_SECRET_KEY=ADMIN_SECRET_KEY:latest,FIREBASE_SERVICE_ACCOUNT_KEY=FIREBASE_SERVICE_ACCOUNT_KEY:latest'
+
+images:
+  - 'gcr.io/$PROJECT_ID/say-00:$COMMIT_SHA'
