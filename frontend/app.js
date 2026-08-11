@@ -143,7 +143,6 @@ document.addEventListener('DOMContentLoaded', () => {
   function initFirebaseAuth() {
     if (window.firebase && !firebase.apps.length) {
       const firebaseConfig = {
-        apiKey: "AIzaSyCFB6BAX1Wle8f_q3-duSSGFs1-nxs_H8A",
         authDomain: "mommocmoc-say-00.firebaseapp.com",
         projectId: "mommocmoc-say-00"
       };
