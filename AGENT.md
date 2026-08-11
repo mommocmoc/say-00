@@ -68,7 +68,7 @@ When the user speaks a command like **"Say [Subject Type]"** (e.g., *Say "Cheese
 
 ### ✅ Completed Features
 - [x] **iOS Camera UI & Siri Voice Recognition**: Edge-to-edge camera feed with Web Speech API (`isFinal` speech detection & attached speech slot extraction e.g. "세이치즈", "saycheese").
-- [x] **ADK 2.0 Graph & Gemini Multimodal Engine**: Safety guardrail node & `gemini-3.1-flash-lite-image` subject transformer.
+- [x] **ADK 2.0 Graph & Gemini Multimodal Engine**: Safety guardrail node (Expanded 4-category offline dataset: Profanity, Adult/Nudity, Violence/Death, Illegal/Weapons) & `gemini-3.1-flash-lite-image` subject transformer.
 - [x] **Mobile Reliable Download & Native Share**: Blob Object URL download & Web Share API (`navigator.share`) for iOS photo album saving.
 - [x] **3-Tier Quota & Auth Architecture**:
   - **Tier 1 (Guest)**: 3-shot free preview (`free_shots: 3`).
@@ -79,6 +79,7 @@ When the user speaks a command like **"Say [Subject Type]"** (e.g., *Say "Cheese
 - [x] **GCP Cloud Run Deploy Automation**: Created safe `deploy.sh` script with GCP Secret Manager bindings using production `Dockerfile` for `say-00` in `asia-northeast1`.
 - [x] **Git Branching Strategy**: Created and pushed feature branch `feature/firebase-quota-mobile-download` to origin to protect `main` branch auto-deployment trigger.
 
+- [x] **Firebase Auth Production SDK**: Integrated Firebase Web SDK v10 `GoogleAuthProvider` popup for live 1-second Google Sign-In & 7-shot bonus upgrade.
+
 ### ⏳ Pending Backlog (Next Steps)
 - [ ] **Lemon Squeezy Live Store Integration**: Replace client-side mock modal trigger with official Lemon Squeezy SDK (`LemonSqueezy.Url.Open`) and Webhook (`POST /api/webhook/lemonsqueezy`) handler.
-- [ ] **Firebase Auth Production SDK**: Wire Firebase Web SDK v10 `GoogleAuthProvider` popup for live Google Sign-In.
