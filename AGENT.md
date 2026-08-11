@@ -62,6 +62,11 @@ When the user speaks a command like **"Say [Subject Type]"** (e.g., *Say "Cheese
    - All Python code MUST strictly adhere to the Google Python Style Guide.
    - Run `flake8 backend/` after making backend changes to verify zero errors before declaring task completion.
 
+6. **🚨 Zero-Hardcoding & Secret Security Rule**:
+   - **NEVER hardcode API keys, secrets, or credential tokens** (e.g. `AIzaSy...`) in any file (`app.js`, `README.md`, `agent.py` etc.).
+   - All secrets MUST be injected via `os.environ` or GCP Secret Manager.
+   - Before committing, verify zero secret strings using `grep -r "AIza" .`.
+
 ---
 
 ## 📋 Development Backlog & Roadmap
