@@ -138,22 +138,57 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Firebase Auth Setup for Google Sign-In
+  let auth = null;
+  function initFirebaseAuth() {
+    if (window.firebase && !firebase.apps.length) {
+      const firebaseConfig = {
+        apiKey: "AIzaSyCFB6BAX1Wle8f_q3-duSSGFs1-nxs_H8A",
+        authDomain: "mommocmoc-say-00.firebaseapp.com",
+        projectId: "mommocmoc-say-00"
+      };
+      try {
+        firebase.initializeApp(firebaseConfig);
+        auth = firebase.auth();
+      } catch (e) {
+        console.warn('Firebase Auth init warn:', e);
+      }
+    }
+  }
+  initFirebaseAuth();
+
   // Google 1-second Login Handler (Upgrades 3-shot guest to 10-shot member)
   if (btnGoogleLogin) {
     btnGoogleLogin.addEventListener('click', async () => {
       try {
-        showToast('Google 계정 로그인 처리 중...');
-        const mockGoogleUser = {
-          google_uid: 'user_' + Date.now().toString().slice(-6),
-          email: 'user' + Math.floor(Math.random()*1000) + '@gmail.com',
-          name: 'SayCam User',
-          anon_client_id: clientId
-        };
+        showToast('Google 계정 로그인 팝업 호출 중...');
+        let googleUserPayload = null;
+
+        if (window.firebase && firebase.auth) {
+          const provider = new firebase.auth.GoogleAuthProvider();
+          provider.addScope('email');
+          provider.addScope('profile');
+          const result = await firebase.auth().signInWithPopup(provider);
+          googleUserPayload = {
+            google_uid: result.user.uid,
+            email: result.user.email || 'user@gmail.com',
+            name: result.user.displayName || 'SayCam User',
+            anon_client_id: clientId
+          };
+        } else {
+          // Fallback simulation for local dev without domain registration
+          googleUserPayload = {
+            google_uid: 'user_' + Date.now().toString().slice(-6),
+            email: 'user' + Math.floor(Math.random()*1000) + '@gmail.com',
+            name: 'SayCam User',
+            anon_client_id: clientId
+          };
+        }
 
         const res = await fetch('/api/user/google-login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(mockGoogleUser)
+          body: JSON.stringify(googleUserPayload)
         });
 
         if (res.ok) {
@@ -169,7 +204,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       } catch (e) {
         console.warn('Google login error:', e);
-        showToast('Google 로그인 연동 오류');
+        if (e.code === 'auth/popup-closed-by-user') {
+          showToast('Google 로그인 팝업이 닫혔습니다.');
+        } else {
+          showToast('Google 로그인 팝업 호출 오류: ' + (e.message || '인증 불가'));
+        }
       }
     });
   }
