@@ -7,9 +7,13 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /app
 
-# Install essential system dependencies for Pillow
+# Install essential system dependencies for Pillow image processing
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    libjpeg-dev \
+    zlib1g-dev \
+    libpng-dev \
+    libfreetype6-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
