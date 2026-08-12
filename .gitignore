@@ -6,6 +6,13 @@ env/
 
 # Environment Secrets
 .env
+.env.*
+!.env.example
+*.pem
+*.key
+serviceAccountKey*.json
+firebase-credentials.json
+*-service-account*.json
 
 # Python Cache & Bytecode
 __pycache__/
