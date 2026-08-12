@@ -1,0 +1,70 @@
+name: CI
+
+# Runs on every branch so problems surface before a feature branch is
+# merged into main, which is the branch Cloud Build auto-deploys.
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Lint & Test (Python 3.11)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Pinned to 3.11 to match the Dockerfile base image. Newer
+      # Pythons defer annotation evaluation (PEP 649) and will happily
+      # import modules that raise NameError on the production runtime,
+      # so testing on the deployed version is the point.
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Lint (Google Python Style Guide)
+        run: flake8 backend/ tests/
+
+      # No GEMINI_API_KEY is provided. The suite is offline by design;
+      # if a test ever starts reaching for the network, it fails here.
+      - name: Test
+        run: pytest -v
+
+  docker:
+    name: Build production image
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Cloud Run image
+        run: docker build -t say-00:ci .
+
+      # Boot the real image and hit /api/health, so a container that
+      # builds but crashes on import fails CI rather than production.
+      - name: Smoke test the container
+        run: |
+          docker run -d --name say-00-ci -p 8080:8080 say-00:ci
+          for i in $(seq 1 30); do
+            if curl -fs http://127.0.0.1:8080/api/health > /dev/null; then
+              echo "Container healthy after ${i}s"
+              curl -s http://127.0.0.1:8080/api/health
+              docker rm -f say-00-ci
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Container failed to become healthy:"
+          docker logs say-00-ci
+          docker rm -f say-00-ci
+          exit 1

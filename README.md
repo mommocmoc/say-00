@@ -1,6 +1,7 @@
 # Say "00" Cam (Voice Subject Transformer)
 
 [![Live Demo](https://img.shields.io/badge/▶_Live_Demo-say--00--cam.cowcowwow.kr-ff375f?style=for-the-badge&logo=googlechrome&logoColor=white)](https://say-00-cam.cowcowwow.kr)
+[![CI](https://github.com/mommocmoc/say-00/actions/workflows/ci.yml/badge.svg)](https://github.com/mommocmoc/say-00/actions/workflows/ci.yml)
 [![Portfolio Project](https://img.shields.io/badge/Project-Personal_Portfolio-0a84ff?style=for-the-badge&logo=appveyor)](https://github.com)
 [![Google ADK 2.0](https://img.shields.io/badge/Google_ADK-2.0_Graph-6366f1?style=for-the-badge&logo=google)](https://adk.dev)
 [![Gemini AI](https://img.shields.io/badge/Gemini_AI-gemini--3.1--flash--lite--image-a855f7?style=for-the-badge&logo=google-gemini)](https://ai.google.dev)
