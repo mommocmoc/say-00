@@ -57,15 +57,19 @@ When the user speaks a command like **"Say [Subject Type]"** (e.g., *Say "Cheese
    - In `frontend/app.js`, ONLY process voice triggers when `event.results[i].isFinal` is `true`.
    - Maintain a 2.5s debounce cooldown after capture to prevent partial phrases (e.g. "솜", "솜사", "솜사탕") from triggering multiple back-to-back shots.
 
-4. **LocalStorage Quota Safety**:
+4. **Frontend Cache Busting**:
+   - The CDN serves `app.js` and `style.css` with `cache-control: max-age=14400` while `index.html` is uncached. A deploy therefore pairs fresh markup with a script that can be up to 4 hours stale.
+   - After ANY change to `frontend/app.js` or `frontend/style.css`, bump the `?v=` token on both asset tags in `frontend/index.html`. Skipping this ships markup whose event listeners never attach.
+
+5. **LocalStorage Quota Safety**:
    - When saving history items to LocalStorage, compress transformed images to 280px thumbnails to prevent `QuotaExceededError`.
 
-5. **Code Style, Linting & Test Verification**:
+6. **Code Style, Linting & Test Verification**:
    - All Python code MUST strictly adhere to the Google Python Style Guide.
    - Run `flake8 backend/ tests/` after making backend changes to verify zero errors before declaring task completion. Do NOT raise the line-length limit to make it pass.
    - Run `pytest` as well. Tests MUST stay offline: stub the service layer rather than calling Gemini, so the suite runs in CI without `GEMINI_API_KEY`.
 
-6. **🚨 Zero-Hardcoding & Secret Security Rule**:
+7. **🚨 Zero-Hardcoding & Secret Security Rule**:
    - **NEVER hardcode API keys, secrets, or credential tokens** (e.g. `AIzaSy...`) in any file (`app.js`, `README.md`, `agent.py` etc.).
    - All secrets MUST be injected via `os.environ` or GCP Secret Manager.
    - Before committing, verify zero secret strings using `grep -r "AIza" .`.
