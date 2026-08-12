@@ -80,19 +80,31 @@ say-00/
 ├── AGENT.md                       # Project agent specification & style guide
 ├── README.md                      # Multilingual documentation (국문/영문)
 ├── LICENSE                        # MIT License file
-├── requirements.txt               # Python dependencies specification
+├── requirements.txt               # Runtime dependencies
+├── requirements-dev.txt           # Test & lint dependencies
+├── pytest.ini                     # Pytest configuration (asyncio auto mode)
 ├── .env.example                   # Environment variable template
-├── .env                           # Local Gemini API Key configuration
+├── Dockerfile                     # Cloud Run production image
+├── cloudbuild.yaml                # GCP CI/CD build & deploy pipeline
+├── deploy.sh                      # One-click Cloud Run deploy (Secret Manager)
+├── Procfile                       # Render / Heroku process definition
 ├── backend/
 │   ├── main.py                    # FastAPI REST API & Static File Server
-│   ├── agent.py                   # ADK 2.0 Standard Agent Entrypoint (root_agent)
+│   ├── agent.py                   # ADK 2.0 Agent Entrypoint (root_agent, runner)
 │   └── services/
-│       ├── safety_service.py       # ADK Guardrail Node (Keyword & LLM Moderation)
-│       └── nanobanana_service.py   # Gemini Image Generation Engine (gemini-3.1-flash-lite-image)
-└── frontend/
-    ├── index.html                 # iOS Native Camera UI Layout
-    ├── style.css                  # iOS Design System, Animations & Glassmorphism
-    └── app.js                     # Speech recognition, Camera controls & Sheet Modals
+│       ├── safety_service.py      # ADK Guardrail Node (Blocklist & LLM Moderation)
+│       ├── profanity_words.json   # 4-category bilingual blocklist dataset
+│       └── nanobanana_service.py  # Gemini Image Engine (gemini-3.1-flash-lite-image)
+├── frontend/
+│   ├── index.html                 # iOS Native Camera UI Layout
+│   ├── style.css                  # iOS Design System, Animations & Glassmorphism
+│   └── app.js                     # Speech recognition, Camera controls & Sheet Modals
+├── tests/
+│   ├── conftest.py                # Offline fixtures (no Gemini call required)
+│   ├── test_safety_service.py     # Blocklist guardrail coverage
+│   └── test_agent_graph.py        # ADK graph edge-routing coverage
+└── scripts/
+    └── download_datasets.py       # Rebuilds the open-source blocklist dataset
 ```
 
 ---
@@ -125,6 +137,16 @@ uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
 웹 브라우저에서 `http://127.0.0.1:8000`으로 접속하여 서비스를 이용합니다.
+
+### 4. Run Tests & Lint (테스트 및 린트)
+```bash
+pip install -r requirements-dev.txt
+
+pytest          # 14 tests — 전부 오프라인, API 키 불필요
+flake8 backend/ tests/
+```
+
+테스트는 Gemini를 호출하지 않습니다. 가드레일 1단계(블록리스트)는 네트워크 이전에 단락되고, ADK 그래프 테스트는 서비스 계층을 스텁으로 대체하여 **엣지 라우팅 자체**를 검증합니다 — 차단된 키워드가 변환 노드에 도달하지 않는지까지 확인합니다.
 
 ---
 

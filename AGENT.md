@@ -60,9 +60,10 @@ When the user speaks a command like **"Say [Subject Type]"** (e.g., *Say "Cheese
 4. **LocalStorage Quota Safety**:
    - When saving history items to LocalStorage, compress transformed images to 280px thumbnails to prevent `QuotaExceededError`.
 
-5. **Code Style & Linting Verification**:
+5. **Code Style, Linting & Test Verification**:
    - All Python code MUST strictly adhere to the Google Python Style Guide.
-   - Run `flake8 backend/` after making backend changes to verify zero errors before declaring task completion.
+   - Run `flake8 backend/ tests/` after making backend changes to verify zero errors before declaring task completion. Do NOT raise the line-length limit to make it pass.
+   - Run `pytest` as well. Tests MUST stay offline: stub the service layer rather than calling Gemini, so the suite runs in CI without `GEMINI_API_KEY`.
 
 6. **🚨 Zero-Hardcoding & Secret Security Rule**:
    - **NEVER hardcode API keys, secrets, or credential tokens** (e.g. `AIzaSy...`) in any file (`app.js`, `README.md`, `agent.py` etc.).
@@ -83,6 +84,8 @@ When the user speaks a command like **"Say [Subject Type]"** (e.g., *Say "Cheese
 ### ✅ Completed & Shipped on `main` (Production)
 - [x] **iOS Camera UI & Siri Voice Recognition**: Edge-to-edge camera feed with Web Speech API (`isFinal` speech detection & attached speech slot extraction e.g. "세이치즈", "saycheese").
 - [x] **ADK 2.0 Graph & Gemini Multimodal Engine**: Safety guardrail node (Expanded 4-category offline dataset: Profanity, Adult/Nudity, Violence/Death, Illegal/Weapons) & `gemini-3.1-flash-lite-image` subject transformer.
+- [x] **Offline Pytest Suite**: 14 tests covering the blocklist guardrail and ADK graph edge routing, including an assertion that a blocked keyword never reaches the transform node. Runs without `GEMINI_API_KEY`.
+- [x] **Mobile Reliable Download & Native Share**: Blob Object URL download & Web Share API (`navigator.share`) for iOS photo album saving.
 - [x] **ADK 2.0 Runner-Driven Graph Execution**: `execute_say_pipeline` submits the request to `adk_runner.run_async()`, so the declared `Workflow` graph performs node dispatch and edge routing. Each call uses a throwaway session that is deleted afterwards.
 - [x] **2-Stage Hybrid Safety Guardrail**: Zero-latency offline blocklist (562 terms) backed by a `gemini-3.5-flash-lite` contextual moderation pass that catches terms the blocklist misses.
 - [x] **LocalStorage Quota-Safe History Gallery**: 280px thumbnail compression to stay within the 5MB `localStorage` budget.
@@ -93,7 +96,6 @@ When the user speaks a command like **"Say [Subject Type]"** (e.g., *Say "Cheese
 These are implemented on the feature branch and pending review before merge.
 Do NOT assume these modules or endpoints exist when working on `main`.
 
-- [ ] **Mobile Reliable Download & Native Share**: Blob Object URL download & Web Share API (`navigator.share`) for iOS photo album saving.
 - [ ] **3-Tier Quota & Auth Architecture**:
   - **Tier 1 (Guest)**: 3-shot free preview (`free_shots: 3`).
   - **Tier 2 (Google Member)**: 1초 Google Login for 7 additional shots (Total 10 free shots).
