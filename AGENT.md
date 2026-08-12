@@ -46,6 +46,8 @@ When the user speaks a command like **"Say [Subject Type]"** (e.g., *Say "Cheese
 1. **ADK 2.0 Standard Entrypoint**:
    - `root_agent` in `backend/agent.py` MUST remain the root Workflow instance.
    - Do NOT import or instantiate legacy `Edge(...)` or `FunctionNode(...)` wrappers unnecessarily; use clean tuple & dictionary edge definitions.
+   - Node functions MUST be reached through `adk_runner.run_async()`, never called directly in sequence. Calling them by hand bypasses graph routing and makes the declared `edges` dead code.
+   - The runner receives the request as a `types.Content` JSON message; `Workflow.input_schema` validates and parses it. The terminal event output arrives as a plain `dict`, so normalize it via `format_output_func`.
 
 2. **Gemini AI Models**:
    - Always use `gemini-3.1-flash-lite-image` via `google-genai` `generate_content` for image subject transformation.
@@ -81,6 +83,7 @@ When the user speaks a command like **"Say [Subject Type]"** (e.g., *Say "Cheese
 ### ✅ Completed & Shipped on `main` (Production)
 - [x] **iOS Camera UI & Siri Voice Recognition**: Edge-to-edge camera feed with Web Speech API (`isFinal` speech detection & attached speech slot extraction e.g. "세이치즈", "saycheese").
 - [x] **ADK 2.0 Graph & Gemini Multimodal Engine**: Safety guardrail node (Expanded 4-category offline dataset: Profanity, Adult/Nudity, Violence/Death, Illegal/Weapons) & `gemini-3.1-flash-lite-image` subject transformer.
+- [x] **ADK 2.0 Runner-Driven Graph Execution**: `execute_say_pipeline` submits the request to `adk_runner.run_async()`, so the declared `Workflow` graph performs node dispatch and edge routing. Each call uses a throwaway session that is deleted afterwards.
 - [x] **2-Stage Hybrid Safety Guardrail**: Zero-latency offline blocklist (562 terms) backed by a `gemini-3.5-flash-lite` contextual moderation pass that catches terms the blocklist misses.
 - [x] **LocalStorage Quota-Safe History Gallery**: 280px thumbnail compression to stay within the 5MB `localStorage` budget.
 - [x] **GCP Cloud Run Deploy Automation**: Created safe `deploy.sh` script with GCP Secret Manager bindings using production `Dockerfile` for `say-00` in `asia-northeast1`.
@@ -100,5 +103,4 @@ Do NOT assume these modules or endpoints exist when working on `main`.
 - [ ] **Firebase Auth Production SDK**: Firebase Web SDK v10 `GoogleAuthProvider` popup for 1-second Google Sign-In & 7-shot bonus upgrade.
 
 ### ⏳ Pending Backlog (Next Steps)
-- [ ] **ADK Runner Wiring on `main`**: Route `execute_say_pipeline` through `adk_runner` so the declared `Workflow` graph executes the nodes, replacing the current manual sequential invocation.
 - [ ] **Lemon Squeezy Live Store Integration**: Replace client-side mock modal trigger with official Lemon Squeezy SDK (`LemonSqueezy.Url.Open`) and Webhook (`POST /api/webhook/lemonsqueezy`) handler.

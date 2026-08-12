@@ -13,6 +13,7 @@ from google.adk.apps import App
 from google.adk.events.event import Event
 from google.adk.runners import InMemoryRunner
 from google.adk.workflow import Workflow
+from google.genai import types
 from pydantic import BaseModel
 
 from backend.services.nanobanana_service import transform_subject_image
@@ -108,20 +109,62 @@ root_agent = Workflow(
 adk_app = App(name='say_app', root_agent=root_agent)
 adk_runner = InMemoryRunner(app=adk_app)
 
+# Fixed identity for the stateless transform pipeline. Each request gets
+# its own throwaway session, so no conversation state is shared.
+_PIPELINE_USER_ID = 'say_cam_pipeline'
+
 
 async def execute_say_pipeline(
     image_b64: str, target_keyword: str
 ) -> TransformResponse:
-    """Executes the ADK 2.0 workflow pipeline for the given input."""
+    """Executes the ADK 2.0 workflow graph for the given input.
+
+    The request is handed to the ADK runner as a JSON message, which the
+    workflow validates against `input_schema` before routing it through
+    the declared graph edges. The terminal node output is returned as a
+    plain dict, so it is normalized back into a TransformResponse.
+
+    Args:
+        image_b64: Base64 data URL of the captured photo.
+        target_keyword: Subject type spoken by the user (e.g. 'Cheese').
+
+    Returns:
+        TransformResponse: Final output of the workflow graph.
+
+    Raises:
+        RuntimeError: If the graph completes without emitting any output.
+    """
     req = TransformRequest(image_b64=image_b64, target_keyword=target_keyword)
+    message = types.Content(
+        role='user',
+        parts=[types.Part(text=req.model_dump_json())],
+    )
 
-    # Run Node 1: Safety Guardrail
-    safety_event = safety_guardrail_func(req)
-    route = safety_event.actions.route if safety_event.actions else None
+    session_service = adk_runner.session_service
+    session = await session_service.create_session(
+        app_name=adk_runner.app_name,
+        user_id=_PIPELINE_USER_ID,
+    )
 
-    if route == 'blocked':
-        return format_output_func(safety_event.output)
+    final_output = None
+    try:
+        async for event in adk_runner.run_async(
+            user_id=_PIPELINE_USER_ID,
+            session_id=session.id,
+            new_message=message,
+        ):
+            if event.output is not None:
+                final_output = event.output
+    finally:
+        # Drop the throwaway session so in-memory history (which holds
+        # the full base64 payload) does not accumulate per request.
+        await session_service.delete_session(
+            app_name=adk_runner.app_name,
+            user_id=_PIPELINE_USER_ID,
+            session_id=session.id,
+        )
 
-    # Run Node 2: NanoBanana Image Transformation
-    transform_event = nanobanana_transform_func(req)
-    return format_output_func(transform_event.output)
+    if final_output is None:
+        raise RuntimeError('ADK workflow graph produced no output event.')
+
+    return format_output_func(final_output)
