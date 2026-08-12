@@ -23,5 +23,12 @@ steps:
       - '--allow-unauthenticated'
       - '--set-secrets=GEMINI_API_KEY=GEMINI_API_KEY:latest,ADMIN_SECRET_KEY=ADMIN_SECRET_KEY:latest,FIREBASE_SERVICE_ACCOUNT_KEY=FIREBASE_SERVICE_ACCOUNT_KEY:latest'
 
+# When a trigger runs as a user-specified service account, Cloud Build
+# refuses to start unless a log destination is chosen explicitly, since
+# it can no longer default to the legacy Google-owned logs bucket.
+# CLOUD_LOGGING_ONLY keeps logs in Cloud Logging and needs no bucket.
+options:
+  logging: CLOUD_LOGGING_ONLY
+
 images:
   - 'gcr.io/$PROJECT_ID/say-00:$COMMIT_SHA'
