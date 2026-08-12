@@ -31,7 +31,7 @@ When the user speaks a command like **"Say [Subject Type]"** (e.g., *Say "Cheese
     ]
     ```
 - `backend/main.py`: FastAPI web server serving REST API endpoints (`POST /api/transform`, `POST /api/safety-check`, `GET /api/health`) and mounting static web files.
-- `backend/services/safety_service.py`: 2-stage hybrid safety moderation (`INAPPROPRIATE_KEYWORDS` + `gemini-2.5-flash` context check).
+- `backend/services/safety_service.py`: 2-stage hybrid safety moderation (`INAPPROPRIATE_KEYWORDS` + `gemini-3.5-flash-lite` context check).
 - `backend/services/nanobanana_service.py`: `gemini-3.1-flash-lite-image` model integration with PIL visual fallback engine.
 
 ### 2. Frontend Architecture (`frontend/`)
@@ -71,20 +71,34 @@ When the user speaks a command like **"Say [Subject Type]"** (e.g., *Say "Cheese
 
 ## 📋 Development Backlog & Roadmap
 
-### ✅ Completed Features
+> **📍 Branch Scope Notice**
+> This document describes the **`main`** branch, which is the deployed production
+> build serving <https://say-00-cam.cowcowwow.kr>. Monetization and account
+> features (Firestore quota, Google Sign-In, payments) are **not** part of `main`
+> — they live on the `feature/firebase-quota-mobile-download` branch and are
+> listed separately below. The module map in section 1–2 reflects `main` only.
+
+### ✅ Completed & Shipped on `main` (Production)
 - [x] **iOS Camera UI & Siri Voice Recognition**: Edge-to-edge camera feed with Web Speech API (`isFinal` speech detection & attached speech slot extraction e.g. "세이치즈", "saycheese").
 - [x] **ADK 2.0 Graph & Gemini Multimodal Engine**: Safety guardrail node (Expanded 4-category offline dataset: Profanity, Adult/Nudity, Violence/Death, Illegal/Weapons) & `gemini-3.1-flash-lite-image` subject transformer.
-- [x] **Mobile Reliable Download & Native Share**: Blob Object URL download & Web Share API (`navigator.share`) for iOS photo album saving.
-- [x] **3-Tier Quota & Auth Architecture**:
-  - **Tier 1 (Guest)**: 3-shot free preview (`free_shots: 3`).
-  - **Tier 2 (Google Member)**: 1초 Google Login for 7 additional shots (Total 10 free shots).
-  - **Tier 3 (Paid Member)**: Lemon Squeezy payment recharge modal ($0.79 / 5 shots).
-- [x] **Firestore & Firebase Storage Integration**: Persistent user quota tracking and public HTTPS storage URLs.
-- [x] **Public Repo Security & Admin API**: Removed client-side bypasses; added `POST /api/admin/reset-quota` with `X-Admin-Secret` header verification and GCP Secret Manager integration guide.
+- [x] **2-Stage Hybrid Safety Guardrail**: Zero-latency offline blocklist (562 terms) backed by a `gemini-3.5-flash-lite` contextual moderation pass that catches terms the blocklist misses.
+- [x] **LocalStorage Quota-Safe History Gallery**: 280px thumbnail compression to stay within the 5MB `localStorage` budget.
 - [x] **GCP Cloud Run Deploy Automation**: Created safe `deploy.sh` script with GCP Secret Manager bindings using production `Dockerfile` for `say-00` in `asia-northeast1`.
 - [x] **Git Branching Strategy**: Created and pushed feature branch `feature/firebase-quota-mobile-download` to origin to protect `main` branch auto-deployment trigger.
 
-- [x] **Firebase Auth Production SDK**: Integrated Firebase Web SDK v10 `GoogleAuthProvider` popup for live 1-second Google Sign-In & 7-shot bonus upgrade.
+### 🚧 In Progress on `feature/firebase-quota-mobile-download` (Not in `main`)
+These are implemented on the feature branch and pending review before merge.
+Do NOT assume these modules or endpoints exist when working on `main`.
+
+- [ ] **Mobile Reliable Download & Native Share**: Blob Object URL download & Web Share API (`navigator.share`) for iOS photo album saving.
+- [ ] **3-Tier Quota & Auth Architecture**:
+  - **Tier 1 (Guest)**: 3-shot free preview (`free_shots: 3`).
+  - **Tier 2 (Google Member)**: 1초 Google Login for 7 additional shots (Total 10 free shots).
+  - **Tier 3 (Paid Member)**: Lemon Squeezy payment recharge modal ($0.79 / 5 shots).
+- [ ] **Firestore & Firebase Storage Integration** (`backend/services/firebase_service.py`): Persistent user quota tracking and public HTTPS storage URLs.
+- [ ] **Admin Quota API**: `POST /api/admin/reset-quota` with `X-Admin-Secret` header verification and GCP Secret Manager integration.
+- [ ] **Firebase Auth Production SDK**: Firebase Web SDK v10 `GoogleAuthProvider` popup for 1-second Google Sign-In & 7-shot bonus upgrade.
 
 ### ⏳ Pending Backlog (Next Steps)
+- [ ] **ADK Runner Wiring on `main`**: Route `execute_say_pipeline` through `adk_runner` so the declared `Workflow` graph executes the nodes, replacing the current manual sequential invocation.
 - [ ] **Lemon Squeezy Live Store Integration**: Replace client-side mock modal trigger with official Lemon Squeezy SDK (`LemonSqueezy.Url.Open`) and Webhook (`POST /api/webhook/lemonsqueezy`) handler.

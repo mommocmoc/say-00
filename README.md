@@ -1,10 +1,23 @@
 # Say "00" Cam (Voice Subject Transformer)
 
+[![Live Demo](https://img.shields.io/badge/▶_Live_Demo-say--00--cam.cowcowwow.kr-ff375f?style=for-the-badge&logo=googlechrome&logoColor=white)](https://say-00-cam.cowcowwow.kr)
 [![Portfolio Project](https://img.shields.io/badge/Project-Personal_Portfolio-0a84ff?style=for-the-badge&logo=appveyor)](https://github.com)
 [![Google ADK 2.0](https://img.shields.io/badge/Google_ADK-2.0_Graph-6366f1?style=for-the-badge&logo=google)](https://adk.dev)
 [![Gemini AI](https://img.shields.io/badge/Gemini_AI-gemini--3.1--flash--lite--image-a855f7?style=for-the-badge&logo=google-gemini)](https://ai.google.dev)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.141-10b981?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
+
+---
+
+## 🔗 Live Demo (라이브 데모)
+
+### ▶️ **[https://say-00-cam.cowcowwow.kr](https://say-00-cam.cowcowwow.kr)**
+
+설치 없이 브라우저에서 바로 실행됩니다. 카메라·마이크 권한을 허용한 뒤 **"세이 치즈"** 또는 **"Say Cheese"** 라고 말해보세요.
+
+> 💡 음성 인식에 Web Speech API를 사용하므로 **Chrome / Edge / Safari**에서 가장 안정적으로 동작하며, 카메라 접근을 위해 HTTPS 연결이 필요합니다.
+
+배포 환경: **Google Cloud Run** (`asia-northeast1`) — API 키는 GCP Secret Manager로 주입됩니다.
 
 ---
 
@@ -26,7 +39,7 @@
 
 2. **🛡️ ADK 2.0 Graph Safety Guardrail Node (2단계 하이브리드 유해성 검증)**
    - **1단계 (Zero-Latency Guardrail)**: 선정성(나체, 누드), 잔혹성/폭력성(시체, 살인), 불법/마약 등의 키워드를 0.001초 만에 즉시 차단합니다.
-   - **2단계 (Gemini LLM Guardrail)**: `GEMINI_API_KEY` 설정 시 Gemini 2.5 Flash LLM이 맥락(Context)을 심층 평가하여 억측 과잉 차단 없이 정교하게 2차 필터링합니다.
+   - **2단계 (Gemini LLM Guardrail)**: `GEMINI_API_KEY` 설정 시 `gemini-3.5-flash-lite` LLM이 맥락(Context)을 심층 평가하여 억측 과잉 차단 없이 정교하게 2차 필터링합니다.
 
 3. **🎨 Gemini AI Multimodal Subject Transformation (NanoBanana Engine)**
    - **`gemini-3.1-flash-lite-image`** 모델을 직접 호출하여 원본 사진의 구도와 배경을 유지한 채 메인 피사체를 실감 나는 재질로 생성 및 합성합니다.
