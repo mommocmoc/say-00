@@ -672,12 +672,13 @@ html, body {
 /* Sheet Footer Buttons */
 .sheet-footer {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   margin-top: 6px;
 }
 
 .btn-ios-action {
-  flex: 1;
+  flex: 1 1 130px;
   padding: 14px;
   border-radius: 14px;
   border: none;
@@ -698,6 +699,11 @@ html, body {
 
 .btn-ios-download {
   background: var(--ios-accent);
+  color: #fff;
+}
+
+.btn-ios-share {
+  background: linear-gradient(135deg, var(--ios-purple), var(--ios-accent));
   color: #fff;
 }
 

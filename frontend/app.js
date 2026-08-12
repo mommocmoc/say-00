@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const tabShowTransformed = document.getElementById('tabShowTransformed');
   const tabShowOriginal = document.getElementById('tabShowOriginal');
   const btnDownloadResult = document.getElementById('btnDownloadResult');
+  const btnShareResult = document.getElementById('btnShareResult');
   const btnRetakeFromSheet = document.getElementById('btnRetakeFromSheet');
   
   const gallerySheet = document.getElementById('gallerySheet');
@@ -318,7 +319,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Default view transformed image
     showTransformedTab();
-    btnDownloadResult.href = data.transformed_image;
 
     resultSheet.classList.add('active');
   }
@@ -341,6 +341,71 @@ document.addEventListener('DOMContentLoaded', () => {
 
   tabShowTransformed.addEventListener('click', showTransformedTab);
   tabShowOriginal.addEventListener('click', showOriginalTab);
+
+  function activeResultImage() {
+    if (!activeResultData) return null;
+    return activeResultData.transformed_image || activeResultData.original_image;
+  }
+
+  // Reliable Blob-based download. iOS Safari refuses to save `data:` URLs
+  // from an <a download>, so the payload is re-fetched into an Object URL.
+  btnDownloadResult.addEventListener('click', async () => {
+    const imgUrl = activeResultImage();
+    if (!imgUrl) return;
+    const keyword = activeResultData.target_keyword || 'photo';
+    const filename = `say_${keyword}_${Date.now()}.jpg`;
+
+    try {
+      showToast('사진 다운로드 준비 중...');
+      const response = await fetch(imgUrl);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+      showToast('사진이 성공적으로 저장되었습니다!');
+    } catch (e) {
+      console.warn('Blob download error:', e);
+      window.open(imgUrl, '_blank');
+    }
+  });
+
+  // Web Share API: saves straight into the iOS/Android photo album.
+  btnShareResult.addEventListener('click', async () => {
+    const imgUrl = activeResultImage();
+    if (!imgUrl) return;
+    const keyword = activeResultData.target_keyword || 'photo';
+
+    try {
+      const response = await fetch(imgUrl);
+      const blob = await response.blob();
+      const file = new File([blob], `say_${keyword}.jpg`, {
+        type: 'image/jpeg'
+      });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: `Say "${keyword}" AI 사진`,
+          text: `Say "00" Cam으로 생성한 '${keyword}' 변환 사진입니다!`,
+          files: [file]
+        });
+        showToast('공유/사진 앱 저장 성공!');
+      } else {
+        // Desktop or unsupported browser: fall back to a plain download.
+        btnDownloadResult.click();
+      }
+    } catch (e) {
+      if (e.name === 'AbortError') return;
+      console.warn('Share API error:', e);
+      btnDownloadResult.click();
+    }
+  });
 
   const closeResultSheet = () => resultSheet.classList.remove('active');
   btnCloseResultSheet.addEventListener('click', closeResultSheet);
