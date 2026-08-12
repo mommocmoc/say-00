@@ -1,7 +1,8 @@
 """Safety and Moderation Service for Say "00" Cam.
 
 Evaluates target keywords for inappropriate, harmful, adult, hate speech,
-profanity, or curse words using a comprehensive 4-category offline dataset and Gemini LLM.
+profanity, or curse words using a comprehensive 4-category offline
+dataset and Gemini LLM.
 """
 
 import json
@@ -15,14 +16,24 @@ load_dotenv(override=True)
 # Global dataset profanity set initialization
 INAPPROPRIATE_SET: Set[str] = set()
 
+# All 4 safety dataset categories loaded into the blocklist.
+SAFETY_CATEGORY_KEYS = (
+    "profanity_and_curse",
+    "adult_and_explicit",
+    "violence_and_death",
+    "illegal_and_weapons",
+)
+
 
 def load_inappropriate_dataset():
-    """Loads all 4 categories (Profanity, Adult, Violence, Illegal) into memory set."""
+    """Loads all 4 categories (Profanity, Adult, Violence, Illegal)."""
     global INAPPROPRIATE_SET
     if INAPPROPRIATE_SET:
         return INAPPROPRIATE_SET
 
-    dataset_path = os.path.join(os.path.dirname(__file__), "profanity_words.json")
+    dataset_path = os.path.join(
+        os.path.dirname(__file__), "profanity_words.json"
+    )
     words = set()
 
     if os.path.exists(dataset_path):
@@ -30,7 +41,7 @@ def load_inappropriate_dataset():
             with open(dataset_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
                 # Load all 4 safety categories
-                for category_key in ["profanity_and_curse", "adult_and_explicit", "violence_and_death", "illegal_and_weapons"]:
+                for category_key in SAFETY_CATEGORY_KEYS:
                     for word in data.get(category_key, []):
                         words.add(word.strip().lower())
         except Exception as e:
@@ -65,7 +76,7 @@ def check_keyword_safety(keyword: str) -> dict:
     """Analyze if the target subject keyword is safe.
 
     Args:
-        keyword: The subject type spoken by user (e.g. 'Cheese', 'Stone', '시금치')
+        keyword: Subject type spoken by user (e.g. 'Cheese', '시금치').
 
     Returns:
         dict: {'is_safe': bool, 'reason': str}
@@ -76,7 +87,8 @@ def check_keyword_safety(keyword: str) -> dict:
     if not clean_keyword:
         return {'is_safe': False, 'reason': '피사체 키워드가 비어 있습니다.'}
 
-    # 1. Fast Blacklist Trie / Substring Matching (Covers All 4 Categories: Profanity, Adult, Violence, Illegal)
+    # 1. Fast blocklist substring matching across all 4 categories
+    #    (Profanity, Adult, Violence, Illegal).
     bad_word_set = load_inappropriate_dataset()
     for bad_word in bad_word_set:
         if bad_word and bad_word in clean_keyword:
@@ -88,7 +100,7 @@ def check_keyword_safety(keyword: str) -> dict:
                 ),
             }
 
-    # 2. Check using Gemini LLM if API key is available for edge cases & context verification
+    # 2. Gemini LLM context check for edge cases, when an API key is set.
     gemini_key = os.environ.get('GEMINI_API_KEY')
     if gemini_key:
         try:
@@ -97,11 +109,13 @@ def check_keyword_safety(keyword: str) -> dict:
             prompt = (
                 'You are a safety moderator for an image transformation'
                 f" app.\nEvaluate if the subject keyword '{keyword}' is"
-                ' safe.\nRULES:\n- Common foods, objects, materials, animals, toys, furniture'
+                ' safe.\nRULES:\n- Common foods, objects, materials,'
+                ' animals, toys, furniture'
                 ' (e.g., 치즈, 스톤, 캔디, 솜사탕, 시금치, 우주선, 신발) are 100% SAFE.\n-'
                 ' DO NOT over-analyze or invent loose associations.\n- MUST'
-                ' mark UNSAFE (is_safe: false) if the word contains ANY profanity,'
-                ' curse words, swear words, explicit adult content, nudity, violence, corpses, blood,'
+                ' mark UNSAFE (is_safe: false) if the word contains ANY'
+                ' profanity, curse words, swear words, explicit adult'
+                ' content, nudity, violence, corpses, blood,'
                 ' or illegal drugs/weapons in ANY language.\nRespond ONLY'
                 ' in JSON: {"is_safe": true/false, "reason": "explanation'
                 ' in Korean"}'
@@ -122,5 +136,5 @@ def check_keyword_safety(keyword: str) -> dict:
         except Exception as e:
             print(f'Safety check API call fallback: {e}')
 
-    # 3. If no inappropriate words matched, all diverse objects/materials pass automatically
+    # 3. No blocklist or LLM match: diverse objects/materials pass.
     return {'is_safe': True, 'reason': '안전한 키워드입니다.'}
