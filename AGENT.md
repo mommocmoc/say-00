@@ -108,5 +108,32 @@ Do NOT assume these modules or endpoints exist when working on `main`.
 - [ ] **Admin Quota API**: `POST /api/admin/reset-quota` with `X-Admin-Secret` header verification and GCP Secret Manager integration.
 - [ ] **Firebase Auth Production SDK**: Firebase Web SDK v10 `GoogleAuthProvider` popup for 1-second Google Sign-In & 7-shot bonus upgrade.
 
+### 🐞 Known Defects on the Feature Branch (Fix Before Merge)
+
+Audited on the `feature/firebase-quota-mobile-download` branch. None of
+these affect `main` or the live deployment — the modules involved exist
+only on that branch. Line numbers are from that branch, not `main`.
+
+**Blocker — the container will not start**
+- [ ] `backend/services/firebase_service.py` annotates `Dict[str, Any]` but never imports `Any`. Local dev runs Python 3.14, where PEP 649 defers annotation evaluation and hides it; the `Dockerfile` base is Python 3.11, which raises `NameError` at import time. Since `main.py` imports the module, the whole app fails to boot. The CI added on `main` catches this as `flake8 F821` once merged.
+
+**Authentication — the quota system is not actually enforced**
+- [ ] `POST /api/user/google-login` trusts a client-supplied `google_uid` with no `firebase_admin.auth.verify_id_token()` call. Anyone can POST an arbitrary uid to mint 10 shots, or pass someone else's uid to take over their quota and history.
+- [ ] `client_id` is a random string generated in `localStorage` (`getClientId()` in `frontend/app.js`). Clearing site data resets the guest allowance, so the 3-shot free tier is unenforceable.
+- [ ] `GET /api/user/quota` and `GET /api/history` authenticate nothing — supplying another user's `client_id` returns their transformation history, including image URLs.
+- [ ] `ADMIN_SECRET_KEY` in `backend/main.py` falls back to a literal default when unset, and this is a public repository. Reset the quota endpoint to fail closed instead.
+
+**Privacy**
+- [ ] `upload_base64_to_storage()` calls `blob.make_public()`, giving every uploaded photo a permanent unauthenticated URL. These are pictures of people's faces; prefer signed URLs with an expiry.
+
+**Correctness**
+- [ ] `check_and_consume_quota()` reads then writes without a transaction, so concurrent requests can double-spend. Use a Firestore transaction or `Increment`.
+- [ ] Quota is consumed before the transform runs, so a safety-blocked keyword still costs the user a shot.
+- [ ] The Firebase failure path returns `True, 999`, i.e. unlimited shots for everyone whenever Firestore is unreachable. A paid feature should fail closed.
+- [ ] The client-side `firebaseConfig` omits `apiKey`, so `firebase.auth()` cannot initialise and the Google sign-in popup always fails. See rule 3 in `.agents/rules/security.md` for the intended `/api/config` proxy, which does not exist yet.
+
+**Branch hygiene**
+- [ ] Merge `main` into the feature branch first. It is missing the ADK runner wiring, the pytest suite, GitHub Actions CI, the frontend cache-busting rule and the credential `.gitignore` patterns.
+
 ### ⏳ Pending Backlog (Next Steps)
 - [ ] **Lemon Squeezy Live Store Integration**: Replace client-side mock modal trigger with official Lemon Squeezy SDK (`LemonSqueezy.Url.Open`) and Webhook (`POST /api/webhook/lemonsqueezy`) handler.
