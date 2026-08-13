@@ -59,7 +59,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Application State
   let mediaStream = null;
-  let currentFacingMode = 'user'; // 'user' (front) or 'environment' (rear)
+  // Defaults to the rear camera: the app transforms a subject you point
+  // at, so the outward-facing lens is the common case. facingMode is an
+  // ideal constraint, not `exact`, so single-camera desktops still work.
+  let currentFacingMode = 'environment'; // 'user' (front) or 'environment' (rear)
   let recognition = null;
   let isListening = false;
   let lastTriggerTime = 0;
@@ -95,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // --------------------------------------------------------------------------
   // Camera Setup & Flip Controls
   // --------------------------------------------------------------------------
-  async function startCamera(facingMode = 'user') {
+  async function startCamera(facingMode = 'environment') {
     if (mediaStream) {
       mediaStream.getTracks().forEach(track => track.stop());
     }
@@ -121,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  btnStartCamera.addEventListener('click', () => startCamera('user'));
+  btnStartCamera.addEventListener('click', () => startCamera('environment'));
 
   btnFlipCamera.addEventListener('click', () => {
     const nextMode = currentFacingMode === 'user' ? 'environment' : 'user';
